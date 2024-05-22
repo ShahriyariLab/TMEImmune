@@ -8,3 +8,6 @@ from ISTMEscore import ISTMEscore
 from ISTMEscore import get_subtypes
 
 from SIAscore import sia_score
+
+from compare_score import compare
+from compare_score import compare_tcga
