@@ -1,7 +1,7 @@
 from .data_processing import *
 
 from .estimateScore import *
-from .ISTMEscore import *
+from .ISTME import *
 from .netbio import *
 from .SIAscore import *
 

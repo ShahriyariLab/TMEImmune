@@ -1,6 +1,7 @@
 
 import pandas as pd
 import numpy as np
+import warnings
 
 class ISTME_signature:
     def __init__(self):
@@ -57,10 +58,7 @@ def get_subtypes(score, immune_q = 0.5, stromal_q = 0.5):
     """
     Get four TME subtypes
     """
-
-    import warnings
     warnings.filterwarnings('ignore')
-    #istme = ISTMEscore(df)
     score["group"] = [0]*score.shape[0]
     immune_quantile = score['immune'].quantile(q = immune_q)
     stromal_quantile = score['stromal'].quantile(q = stromal_q)
