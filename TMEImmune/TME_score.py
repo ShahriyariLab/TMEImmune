@@ -1,13 +1,4 @@
-#from TMEImmune import estimateScore, ISTMEscore, netbio, SIAscore
-import estimateScore
-import ISTMEscore
-import netbio
-import importlib
-importlib.reload(netbio)
-importlib.reload(ISTMEscore)
-importlib.reload(estimateScore)
-import SIAscore
-importlib.reload(SIAscore)
+from TMEImmune import estimateScore, ISTMEscore, netbio, SIAscore
 import pandas as pd
 import warnings
 

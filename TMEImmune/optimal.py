@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, roc_auc_score, auc, confusion_matrix, accuracy_score, classification_report
+from sklearn.metrics import roc_curve, auc
 from lifelines import KaplanMeierFitter
 from lifelines.plotting import add_at_risk_counts
 from lifelines import CoxPHFitter

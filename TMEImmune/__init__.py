@@ -4,12 +4,9 @@ from data_processing import normalization
 from estimateScore import ESTIMATEscore
 from estimateScore import tumor_purity
 from estimateScore import common_genes
-
 from ISTMEscore import ISTMEscore
 from ISTMEscore import get_subtypes
-
 from netbio import get_netbio
-
 from SIAscore import sia_score
 
 from optimal import assign_type

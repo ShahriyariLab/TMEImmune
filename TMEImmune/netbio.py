@@ -8,9 +8,13 @@ import json
 
 class nb_pathway():
     def __init__(self):
-        self.coef = pd.read_csv("/Users/qiluzhou/Desktop/umass/research/score/data/coef_best_netbio.csv")
-        with open('/Users/qiluzhou/Desktop/umass/research/score/data/gene_sets.json', 'r') as f:
-            self.gene_set = json.load(f)
+        url = "https://raw.githubusercontent.com/qiluzhou/TMEImmune/refs/heads/main/data/"
+        self.coef = pd.read_csv(url + "coef_best_netbio.csv")
+        response = requests.get(url + "gene_sets.json")
+        if response.status_code == 200:
+            self.gene_set = json.loads(response.text)
+        else:
+            print(f"Failed to retrieve the reactomr geneset: {response.status_code}")
     
     def get_nb_coef(self):
         return self.coef
