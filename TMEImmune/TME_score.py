@@ -58,7 +58,7 @@ def get_score(df, method):
             score_est = estimateScore.ESTIMATEscore(df1)
             score_df = pd.concat([score_df, score_est], axis=1)
         elif score == "ISTME":
-            score_istme = ISTMEscore.ISTMEscore(df1)
+            score_istme = ISTMEscore.ISTME(df1)
             score_df = pd.concat([score_df, score_istme], axis = 1)
         elif score == "NetBio":
             score_nb = netbio.get_netbio(df1)

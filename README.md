@@ -29,7 +29,7 @@ Here are some basic usage examples:
 from TMEImmune import data_processing
 import pandas as pd
 clin = pd.read_csv("data/example_clin.csv", index = 0)
-df = data_processing.normalization("data/example_gene.csv", method = 'CPM', batch = clin, batch_col = "CANCER")
+df = data_processing.normalization(path = "data/example_gene.csv", method = 'CPM', batch = clin, batch_col = "CANCER")
 
 # Example 2: Compute TME score
 from TMEImmune import TME_score
