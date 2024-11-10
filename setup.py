@@ -15,7 +15,8 @@ setup(
         long_description=open("README.md").read(),
         long_description_content_type="text/markdown",
         packages=find_packages(),
-        install_requires=["pandas", "numpy", "Warning", "cmapPy", "rnanorm", "inmoose", "lifelines", "sklearn", "matplotlib"], 
+        install_requires=["pandas", "numpy", "warnings", "cmapPy", "rnanorm", "gseapy",
+                          "inmoose", "lifelines", "sklearn", "matplotlib", "request", "os", "json"], 
         keywords=['python', 'TME score'],
         classifiers= [
             "Development Status :: 3 - Alpha",

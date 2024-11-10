@@ -1,8 +1,6 @@
 import gseapy as gp
 import pandas as pd
 import requests
-import string
-import re
 import numpy as np
 import json
 

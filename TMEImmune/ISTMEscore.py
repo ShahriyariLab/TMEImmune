@@ -1,7 +1,6 @@
 
 import pandas as pd
 import numpy as np
-import warnings
 
 class ISTME_signature:
     def __init__(self):
