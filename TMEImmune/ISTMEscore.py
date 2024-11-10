@@ -10,7 +10,7 @@ class ISTME_signature:
         geneset = {"immune": self.immune, "stromal": self.stromal}
         return geneset
 
-def ISTME(df):
+def ISTME_score(df):
     """
     Perform ssGSEA and compute the ISTME stromal and immune score
     df: normalized gene expression matrix, with gene symbol as the first column or index
