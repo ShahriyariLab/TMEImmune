@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.1.0' 
+VERSION = '1.1.0' 
 DESCRIPTION = 'Python package for calculating TME scores'
 
 
@@ -16,7 +16,7 @@ setup(
         long_description_content_type="text/markdown",
         packages=find_packages(),
         install_requires=["pandas", "numpy", "cmapPy", "rnanorm", "gseapy",
-                          "inmoose", "lifelines", "sklearn", "matplotlib", "requests"], 
+                          "inmoose", "lifelines", "scikit-learn", "matplotlib", "requests"], 
         keywords=['python', 'TME score'],
         classifiers= [
             "Development Status :: 3 - Alpha",
@@ -25,5 +25,5 @@ setup(
             "Operating System :: MacOS :: MacOS X",
             "Operating System :: Microsoft :: Windows",
         ],
-        python_requires=">=3.6"
+        python_requires=">=3.10"
 )

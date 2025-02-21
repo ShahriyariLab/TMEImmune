@@ -33,22 +33,19 @@ df = data_processing.normalization(path = "data/example_gene.csv", method = 'CPM
 
 # Example 2: Compute TME score
 from TMEImmune import TME_score
-score = TME_score.get_score(df, method = ['ESTIMATE', 'ISTME', 'NetBio', 'SIA'])
+scores = TME_score.get_score(df, method = ['ESTIMATE', 'ISTME', 'NetBio', 'SIA'])
 
 # Example 3: Performance comparison
 from TMEImmune import optimal
 outcome = optimal.get_performance(scores, metric = ['ICI', 'survival'], score_name = ['EST_stromal', 'EST_immune',
-    'IS_immune', 'IS_stromal', 'NetBio', 'SIA'], ICI_col = 'response', surv_col = ['PFS', 'PFSE'], df_clin = clin, surv_p = [0.33, 0.66])
+    'IS_immune', 'IS_stromal', 'NetBio', 'SIA'], ICI_col = 'response', surv_col = ['time', 'delta'], df_clin = clin, surv_p = [0.33, 0.66])
 ```
-
-## Contributing
-Contributions are welcome! 
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
 ## Contact
-If you have any questions or feedback, feel free to open an issue on GitHub Issues.
+If you have any questions or feedback, feel free to open an issue on GitHub Issues. We also welcome contributions for integrating new TME scores into our package. If you'd like to propose a method, please attach a link to its introduction in the Github issue, and we will evaluate it accordingly. 
 
 ## Acknowledgements
 The ESTIMATE algorithm from Yoshihara et al.

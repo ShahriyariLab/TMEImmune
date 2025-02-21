@@ -35,7 +35,7 @@ def assign_type(score, upper_p, lower_p):
 def optimal_ICI(df, response, score_name, name = None, roc = True):
     """
     Find the optimal score with the highest AUC for ICI response
-    df: pandas dataframe with row index as sample ID, columns containing scores, ICI response (R or NR)
+    df: pandas dataframe with row index as sample ID, columns containing scores, ICI response ([R, NR] or [0, 1])
     response: column name of ICI response
     score_name: list of names of the score columns in df, or a string of name for only one score
     name: custom title name for figure
@@ -48,12 +48,20 @@ def optimal_ICI(df, response, score_name, name = None, roc = True):
         score_name = [score_name]
     
     # transform the response column
-    df[response] = df[response].str.upper()
-    is_valid = df[response].isin(["R","NR"]).all()
-    if not is_valid:
+    all_strings = df1[response].map(lambda x: isinstance(x, str)).all()
+    if all_strings:
+        df1[response] = df1[response].str.upper()
+        if df1[response].isin(["R","NR"]).all():
+            df1["binary_resp"] = df1[response].apply(lambda x: 1 if x == "R" else 0)
+        else:
+            raise ValueError("Unsupported response type")
+    elif df1[response].isin([0,1]).all():
+        df1["binary_resp"] = df1[response]
+    else:
         raise ValueError("Unsupported response type")
 
-    fig = plt.figure(figsize=(8, 6))  # Create a figure for the plot
+    fig = plt.figure(figsize=(8, 6), dpi = 100)  # Create a figure for the plot
+    plt.margins(x=0.05, y=0.05)
     legend_list = score_name
     auc_dict = {}
 
@@ -63,7 +71,7 @@ def optimal_ICI(df, response, score_name, name = None, roc = True):
         df2[score_name[i]] = df2[score_name[i]].astype(float)
         # Compute FPR, TPR, and thresholds for the ROC curve
         fpr, tpr, thresholds = roc_curve(
-            df2[response].apply(lambda x: 1 if x == "R" else 0),
+            df2['binary_resp'],
             df2[score_name[i]])
         
         # Compute the Area Under the Curve (AUC)
@@ -73,20 +81,31 @@ def optimal_ICI(df, response, score_name, name = None, roc = True):
         # Plot the ROC curve
         if roc:
             plt.plot(fpr, tpr, lw=4, label=f'{legend_list[i]} ({roc_auc:.2f})')
-            plt.title("ROC Curves for ICI Prediction", fontweight = "bold")
-            plt.xlabel("False Positive Rates", fontweight = "bold")
-            plt.ylabel("True Positive Rates", fontweight = "bold")
+            plt.title("ROC Curves for ICI Prediction", fontweight = "bold", fontsize = 16)
+            plt.xlabel("False Positive Rates", fontweight = "bold", fontsize = 14)
+            plt.ylabel("True Positive Rates", fontweight = "bold", fontsize = 14)
+            plt.xticks(fontweight="bold", fontsize = 14)
+            plt.yticks(fontweight="bold", fontsize = 14)
 
     # Plot the diagonal line (random classifier)
     if roc:
         plt.plot([0, 1], [0, 1], color='grey', lw=1, linestyle='--')
 
         # Set plot limits and labels
-        plt.xlim([0.0, 1.0])
+        plt.xlim([0.0, 1.03])
         plt.ylim([0.0, 1.1])
+        plt.xticks(fontweight="bold", fontsize = 14)
+        plt.yticks(fontweight="bold", fontsize = 14)
 
-        plt.title(f"ROC Curves for {name}", fontweight = "bold")
-        plt.legend(loc="upper left", bbox_to_anchor=(0, 1), title = "AUC")
+        if name is None:
+            plt.title(f"ROC Curves", fontweight = "bold", fontsize = 16)
+        else:
+            plt.title(f"ROC Curves for {name}", fontweight = "bold", fontsize = 16) 
+
+        plt.legend(loc="upper left", bbox_to_anchor=(0, 1), title = "AUC",
+                   title_fontproperties={'weight': 'bold', 'size': 12}, 
+                   prop = {'size':10, 'weight' : "bold"},
+                   frameon = False)
 
     best_auc = max(auc_dict.values())
     optimal_score = [k for k, v in auc_dict.items() if v == best_auc]
@@ -149,7 +168,9 @@ def optimal_survival(df, delta, time, score_name, clinical_factors = None, upper
 
     # draw K-M survival curves
     if km_curves:
-        fig, axs = plt.subplots(1, len(optimal_score), figsize=(8, 6*len(optimal_score)), constrained_layout=True)
+        fig, axs = plt.subplots(1, len(optimal_score), figsize=(8, 6*len(optimal_score)), 
+                                dpi = 100) #constrained_layout=True, 
+
         if len(optimal_score) == 1:
             axs = [axs]
         for i in range(len(optimal_score)):
@@ -169,25 +190,41 @@ def optimal_survival(df, delta, time, score_name, clinical_factors = None, upper
             kmf_L.fit(durations=df1[df1['score_type'] == 'L'][time], event_observed=df1[df1['score_type'] == 'L'][delta], label='L')
             kmf_L.plot_survival_function(show_censors = True, ci_show = False, linewidth=4, color = palette[1], ax = axs[i])
             # add risk table for high and low groups
-            add_at_risk_counts(kmf_H, kmf_L, ax=axs[i])
+            #add_at_risk_counts(kmf_H, kmf_L, ax=axs[i])
 
             # perform log-rank test
             df1[time] = pd.to_numeric(df1[time], errors='coerce')
             df1[delta] = pd.to_numeric(df1[delta], errors='coerce')
-            results_HL = logrank_test(df1[df1['score_type'] == 'H'][time], df1[df1['score_type'] == 'L'][time], event_observed_A=df1[df1['score_type'] == 'H'][delta], event_observed_B=df1[df1['score_type'] == 'L'][delta])
+            results_HL = logrank_test(df1[df1['score_type'] == 'H'][time], df1[df1['score_type'] == 'L'][time], 
+                                      event_observed_A=df1[df1['score_type'] == 'H'][delta], 
+                                      event_observed_B=df1[df1['score_type'] == 'L'][delta])
 
-            axs[i].text(0.65, 0.85, f"H vs L p = {round(results_HL.p_value,4)}", transform=axs[i].transAxes, verticalalignment='top', fontweight = 'bold')
-            axs[i].set_title(f"K-M Curves for {optimal_score[i]} in {name}", fontweight = 'bold')
-            axs[i].set_xlabel(time, fontweight = 'bold')
-            axs[i].set_ylabel("Survival Rate", fontweight = 'bold')
+            axs[i].margins(x=0.05, y=0.05)
+            axs[i].text(0.5, 0.85, f"H vs L: P  = {round(results_HL.p_value,4)}", 
+                        transform=axs[i].transAxes, verticalalignment='top', fontweight = 'bold', fontsize = 14)
+            axs[i].text(0.5, 0.75, f"c-index = {round(best_c,4)}", transform=axs[i].transAxes, 
+                        verticalalignment='top', fontweight = 'bold', fontsize = 14)
+            
+            if name is None:
+                axs[i].set_title(f"K-M Curves for {optimal_score[i]}", fontweight = 'bold', fontsize = 16)
+            else:
+                axs[i].set_title(f"K-M Curves for {optimal_score[i]} in {name}", fontweight = 'bold', fontsize = 16)
+            axs[i].set_xlabel(time, fontweight = 'bold', fontsize = 14)
+            axs[i].set_ylabel("Survival Rate", fontweight = 'bold', fontsize = 14)
 
             # bold all axis
             xticks = axs[i].get_xticks()
             yticks = axs[i].get_yticks()
             xticks_rounded = np.round(xticks, decimals=0)
             yticks_rounded = np.round(yticks, decimals = 1)
-            axs[i].set_xticklabels([f'{tick:.0f}' for tick in xticks_rounded], weight = 'bold')
-            axs[i].set_yticklabels([f'{tick:.1f}' for tick in yticks_rounded] ,weight = 'bold')
+            axs[i].set_xticklabels([f'{tick:.0f}' for tick in xticks_rounded], weight = 'bold', size = 14)
+            axs[i].set_yticklabels([f'{tick:.1f}' for tick in yticks_rounded] ,weight = 'bold', size = 14)
+            axs[i].legend(
+                        loc="upper right", title="Group",
+                        title_fontproperties={'weight': 'bold', 'size': 12},  # Bold legend title
+                        prop={'size': 10, 'weight': "bold"}
+                    )
+
 
     return fig, c_dict
 
