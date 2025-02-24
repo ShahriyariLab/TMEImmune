@@ -7,6 +7,7 @@ from lifelines.statistics import logrank_test
 from lifelines.utils import concordance_index
 import pandas as pd
 import numpy as np
+import warnings
 
 def assign_type(score, upper_p, lower_p):
     if upper_p == lower_p:
@@ -70,10 +71,17 @@ def optimal_ICI(df, response, score_name, name = None, roc = True):
         df2 = df1[~df1[score_name[i]].isna()]
         df2[score_name[i]] = df2[score_name[i]].astype(float)
         # Compute FPR, TPR, and thresholds for the ROC curve
+
+        if np.isinf(df2[score_name[i]]).any():
+            warnings.warn(f"Warning: {score_name[i]} column contains infinity values. These rows will be removed.", UserWarning)
+        if np.isnan(df2[score_name[i]]).any():
+            warnings.warn(f"Warning: {score_name[i]} column contains NaN values. These rows will be removed.", UserWarning)
+        # Remove rows where score is inf or na
+        df2 = df2[~df2[score_name[i]].isin([np.inf, -np.inf])].dropna(subset=[score_name[i]])
+
         fpr, tpr, thresholds = roc_curve(
             df2['binary_resp'],
             df2[score_name[i]])
-        
         # Compute the Area Under the Curve (AUC)
         roc_auc = auc(fpr, tpr)
         auc_dict[score_name[i]] = roc_auc

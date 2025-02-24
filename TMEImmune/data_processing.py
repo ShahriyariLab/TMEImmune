@@ -113,21 +113,6 @@ def normalization(df = None, path = None, method = None, minmax = False, zscore 
     # remove incorrectly formatted rows
     df_norm = df_norm[~pd.to_datetime(df_norm.index, errors='coerce').notna()]
 
-    # z-score normalization
-    if zscore:
-        scalar = StandardScaler()
-        df_norm = pd.DataFrame(scalar.fit_transform(df_norm.T).T,  # Transpose to scale across rows (genes)
-                                  index=df_norm.index, columns=df_norm.columns)
-        print("---------- data has been z-score normalized ----------")
-
-    # min-max normalization
-    if minmax:
-        min_max_scaler = MinMaxScaler(feature_range=(0, 1))  # Adjust range as needed
-        df_norm = pd.DataFrame(min_max_scaler.fit_transform(df_norm.T).T,  # Transpose to scale across rows (genes)
-                                        index=df_norm.index, columns=df_norm.columns)
-        print("---------- data has been min-max normalized ----------")
-    
-
     if batch is not None:
         if not isinstance(batch_col, str):
             raise TypeError("batch_col must be a string")
@@ -145,12 +130,55 @@ def normalization(df = None, path = None, method = None, minmax = False, zscore 
         unique_batch = batch_ordered[batch_col].value_counts()[batch_ordered[batch_col].value_counts() == 1].index
         
         if not unique_batch.empty:
-            warnings.warn(f"The following batches with only one sample will be removed: {list(unique_batch)}")
+            warnings.warn(f"The following batches with only one sample will be removed: {unique_batch}")
             sample_id = batch[batch[batch_col].isin(unique_batch)].index
             single_batch_colname = list(set(sample_id) & set(df_norm.columns))
             batch_ordered = batch_ordered[~batch_ordered[batch_col].isin(unique_batch)]
             df_norm = df_norm.drop(columns = single_batch_colname)
+
         df_norm = pycombat_seq(df_norm, batch_ordered[batch_col])
         print("---------- batch effect removed ----------")
+
+
+    # z-score normalization
+    if zscore:
+        scalar = StandardScaler()
+        df_norm = pd.DataFrame(scalar.fit_transform(df_norm.T).T,  # Transpose to scale across rows (genes)
+                                  index=df_norm.index, columns=df_norm.columns)
+        print("---------- data has been z-score normalized ----------")
+
+    # min-max normalization
+    if minmax:
+        min_max_scaler = MinMaxScaler(feature_range=(0, 1))  # Adjust range as needed
+        df_norm = pd.DataFrame(min_max_scaler.fit_transform(df_norm.T).T,  # Transpose to scale across rows (genes)
+                                        index=df_norm.index, columns=df_norm.columns)
+        print("---------- data has been min-max normalized ----------")
+    
+
+    # if batch is not None:
+    #     if not isinstance(batch_col, str):
+    #         raise TypeError("batch_col must be a string")
+    #     # replace negative expression values to the absolute values
+    #     df_norm = df_norm.abs()
+    #     warnings.warn("Negative gene expression exists in the dataframe", category=UserWarning)
+
+    #     # reorder batch by the order of the gene expression matrix columns
+    #     common_ID = set(df_norm.columns) & set(batch.index)
+    #     df_norm = df_norm[list(common_ID)]
+    #     common_batch = batch.loc[list(common_ID),:]
+    #     batch_ordered = common_batch.loc[df_norm.columns].reset_index()
+
+    #     # remove batch with only one sample and raise warning
+    #     unique_batch = batch_ordered[batch_col].value_counts()[batch_ordered[batch_col].value_counts() == 1].index
+        
+    #     if not unique_batch.empty:
+    #         warnings.warn(f"The following batches with only one sample will be removed: {unique_batch}")
+    #         sample_id = batch[batch[batch_col].isin(unique_batch)].index
+    #         single_batch_colname = list(set(sample_id) & set(df_norm.columns))
+    #         batch_ordered = batch_ordered[~batch_ordered[batch_col].isin(unique_batch)]
+    #         df_norm = df_norm.drop(columns = single_batch_colname)
+
+    #     df_norm = pycombat_seq(df_norm, batch_ordered[batch_col])
+    #     print("---------- batch effect removed ----------")
             
     return df_norm
