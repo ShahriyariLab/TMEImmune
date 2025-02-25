@@ -1,12 +1,57 @@
 import pandas as pd
 import numpy as np
-import os
+import os, json
 from cmapPy.pandasGEXpress.parse_gct import parse
 from rnanorm import TMM
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from inmoose.pycombat import pycombat_seq
 import warnings
+from collections import defaultdict
+import importlib.resources as pkg_resources
+#import TMEImmune.data  # Import the package where data is stored
 
+
+def load_data(path):
+    """ load data from the package's data folder """
+    #data_folder = pkg_resources.files("TMEImmune") / "data"
+    #file_path = data_folder / path  # Append the filename
+    #file_path = "data/" + path
+
+    if path.endswith(".csv"):
+        with pkg_resources.open_text("TMEImmune.data", path) as f:
+            df = pd.read_csv(f)
+        return df
+        
+    elif path.endswith(".json"):
+        with pkg_resources.open_text("TMEImmune.data", path) as f:
+        #with open(file_path, "r") as f:
+            data = json.load(f)
+        return data
+        
+    elif path.endswith(".gmt"):
+        output = defaultdict(list)
+        output_list = []
+        #f = open(file_path,'r')
+        with pkg_resources.open_text("TMEImmune.data", path) as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip().split('\t')
+                if 'REACTOME' in line[0]:
+                    reactome = line[0]
+                    output_list.append(reactome)
+                    #output[reactome].extend(line[2:])
+                    for i in range(2, len(line)):
+                        gene = line[i]
+                        output[reactome].append(gene)
+        #f.close()
+        return output
+       
+    else: # path.endswith(".txt"):
+        subfolder_name, file_name = path.split("/")
+        data_path = "TMEImmune.data." + subfolder_name
+        with pkg_resources.open_text(data_path, file_name) as f:
+            df = pd.read_table(f)
+        return df
 
 
 def read_data(path):

@@ -15,7 +15,11 @@ setup(
         long_description=open("README.md").read(),
         long_description_content_type="text/markdown",
         packages=find_packages(),
-        install_requires=["pandas>=1.5.0", "numpy>=1.23.5", "cmapPy", "rnanorm", "gseapy > 0.11.0",
+        include_package_data=True,
+        package_data={
+        "TMEImmune": ["data/*.csv", "data/*.json", "data/*.gmt", "data/nb_biomarker/*", "data/Gide/*"], 
+        },
+        install_requires=["pandas>=1.5.0", "numpy>=1.23.5", "cmapPy", "rnanorm", "gseapy >= 0.11.0",
                           "inmoose", "lifelines", "scikit-learn", "matplotlib", "requests"], 
         keywords=['python', 'TME score'],
         classifiers= [

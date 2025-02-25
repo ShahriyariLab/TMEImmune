@@ -1,3 +1,9 @@
 [build-system]
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"your_package" = ["data/*.csv", "data/*.json", "data/*.gmt", "data/nb_biomarker/*", "data/Gide/*"]

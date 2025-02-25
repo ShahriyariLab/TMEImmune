@@ -1,9 +1,11 @@
-from TMEImmune import estimateScore, netbio, SIAscore
-from TMEImmune import ISTME as ISM
+# from TMEImmune import estimateScore, netbio, SIAscore
+# from TMEImmune import ISTME as ISM
+import estimateScore, netbio, SIAscore
+import ISTME as ISM
 import pandas as pd
 import warnings
 
-def get_score(df, method):
+def get_score(df, method, clin = None, test_clinid = None):
     """
     Compute TME scores for the input gene expression data.
     df: a pandas dataframe having gene symbol as the first column or row index
@@ -62,7 +64,11 @@ def get_score(df, method):
             score_istme = ISM.istmeScore(df1)
             score_df = pd.concat([score_df, score_istme], axis = 1)
         elif score == "NetBio":
-            score_nb = netbio.get_netbio(df1)
+            if any(arg is None for arg in [clin, test_clinid]):
+                raise ValueError("NetBio score needs input for clinical dataset, gene column id and response column id")
+            df2 = df1.reset_index()
+            score_nb = netbio.get_netbio(df2, clin, test_clinid)
+            score_nb = pd.Series(score_nb, name = "NetBio", index = score_df.index)
             score_df = pd.concat([score_df, score_nb], axis = 1)
         elif score == "SIA":
             score_sia = SIAscore.sia_score(df1)
