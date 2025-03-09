@@ -19,8 +19,8 @@ setup(
         package_data={
         "TMEImmune": ["data/*.csv", "data/*.json", "data/*.gmt", "data/nb_biomarker/*", "data/Gide/*"], 
         },
-        install_requires=["pandas>=1.5.0", "numpy>=1.23.5", "cmapPy", "rnanorm", "gseapy >= 0.11.0",
-                          "inmoose", "lifelines", "scikit-learn", "matplotlib", "requests"], 
+        install_requires=["pandas>=1.5.0", "numpy>=1.23.5", "rnanorm",
+                          "inmoose", "lifelines", "scikit-learn", "matplotlib", "scipy", "statsmodels", "joblib"], 
         keywords=['python', 'TME score'],
         classifiers= [
             "Development Status :: 3 - Alpha",

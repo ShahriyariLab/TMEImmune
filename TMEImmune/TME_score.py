@@ -1,7 +1,7 @@
-# from TMEImmune import estimateScore, netbio, SIAscore
-# from TMEImmune import ISTME as ISM
-import estimateScore, netbio, SIAscore
-import ISTME as ISM
+from TMEImmune import estimateScore, netbio, SIAscore
+from TMEImmune import ISTME as ISM
+from TMEImmune import nb_utilities as nbu
+from TMEImmune import data_processing
 import pandas as pd
 import warnings
 
@@ -23,8 +23,8 @@ def get_score(df, method, clin = None, test_clinid = None):
     has_letters = first_col.apply(lambda x: any(char.isalpha() for char in str(x)))
     if has_letters.all():
         df1 = df.copy()
-        df.index = first_col
-        df = df.iloc[:,1:]
+        df1.index = first_col
+        df1 = df1.iloc[:,1:]
     else:
         ind_letters = df.index.to_series().apply(lambda x: any(char.isalpha() for char in str(x)))
         if not ind_letters.any():
@@ -65,7 +65,7 @@ def get_score(df, method, clin = None, test_clinid = None):
             score_df = pd.concat([score_df, score_istme], axis = 1)
         elif score == "NetBio":
             if any(arg is None for arg in [clin, test_clinid]):
-                raise ValueError("NetBio score needs input for clinical dataset, gene column id and response column id")
+                raise ValueError("NetBio score needs input for clinical dataset and response column id")
             df2 = df1.reset_index()
             score_nb = netbio.get_netbio(df2, clin, test_clinid)
             score_nb = pd.Series(score_nb, name = "NetBio", index = score_df.index)

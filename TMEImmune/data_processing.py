@@ -1,21 +1,17 @@
 import pandas as pd
 import numpy as np
 import os, json
-from cmapPy.pandasGEXpress.parse_gct import parse
+#from cmapPy.pandasGEXpress.parse_gct import parse
 from rnanorm import TMM
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from inmoose.pycombat import pycombat_seq
 import warnings
 from collections import defaultdict
 import importlib.resources as pkg_resources
-#import TMEImmune.data  # Import the package where data is stored
 
 
 def load_data(path):
     """ load data from the package's data folder """
-    #data_folder = pkg_resources.files("TMEImmune") / "data"
-    #file_path = data_folder / path  # Append the filename
-    #file_path = "data/" + path
 
     if path.endswith(".csv"):
         with pkg_resources.open_text("TMEImmune.data", path) as f:
@@ -47,11 +43,24 @@ def load_data(path):
         return output
        
     else: # path.endswith(".txt"):
-        subfolder_name, file_name = path.split("/")
-        data_path = "TMEImmune.data." + subfolder_name
+        if "/" in path:
+            subfolder_name, file_name = path.split("/")
+            data_path = "TMEImmune.data." + subfolder_name
+        else:
+            data_path = "TMEImmune.data"
         with pkg_resources.open_text(data_path, file_name) as f:
             df = pd.read_table(f)
         return df
+
+def read_gct(file_path):
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+    # metadata
+    num_rows, num_cols = map(int, lines[1].strip().split('\t')[0:2])
+    # read data from the third lines
+    df = pd.read_csv(file_path, sep='\t', skiprows=2, index_col=0)
+    assert df.shape[0] == num_rows and df.shape[1] == num_cols, "Dimension mismatch"
+    return df
 
 
 def read_data(path):
@@ -70,8 +79,8 @@ def read_data(path):
         df = pd.read_csv(path, index_col=0)
 
     elif file_extension == '.gct':
-        df = parse(path)
-        df = df.data_df
+        df = read_gct(path)
+        #df = df.data_df
 
     else:
         raise TypeError(file_extension + " file is not supported")

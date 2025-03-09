@@ -8,3 +8,5 @@ from .SIAscore import *
 from .TME_score import get_score
 
 from .optimal import *
+
+from .nb_utilities import *

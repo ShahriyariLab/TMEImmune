@@ -10,6 +10,11 @@
 - Data pre-processing including normalization and batch correction for both unnormalized read counts and normalized data.
 - Performance evaluation for immune checkpoint inhibitor response prediction and survival prognosis.
 
+## Requirement
+
+The installation of TMEImmune requires python version 3.10 and above.
+
+
 ## Installation
 
 You can install the package via the following two commands:
@@ -24,21 +29,40 @@ pip install git+https://github.com/qiluzhou/TMEImmune.git
 
 Here are some basic usage examples:
 
+Example 1:
 ```
-# Example 1: Data Normalization
-from TMEImmune import data_processing
 import pandas as pd
-clin = pd.read_csv("data/example_clin.csv", index = 0)
-df = data_processing.normalization(path = "data/example_gene.csv", method = 'CPM', batch = clin, batch_col = "CANCER")
-
-# Example 2: Compute TME score
+from TMEImmune import data_processing
 from TMEImmune import TME_score
-scores = TME_score.get_score(df, method = ['ESTIMATE', 'ISTME', 'NetBio', 'SIA'])
-
-# Example 3: Performance comparison
 from TMEImmune import optimal
-outcome = optimal.get_performance(scores, metric = ['ICI', 'survival'], score_name = ['EST_stromal', 'EST_immune',
-    'IS_immune', 'IS_stromal', 'NetBio', 'SIA'], ICI_col = 'response', surv_col = ['time', 'delta'], df_clin = clin, surv_p = [0.33, 0.66])
+
+# Step 1: Data Normalization
+clin = pd.read_csv("example_clin.csv", index_col = 0)
+df = data_processing.normalization(path = "example_gene.csv", method = 'TMM', batch = clin, batch_col = "CANCER")
+
+# Step 2: Compute TME score
+score = TME_score.get_score(df, method = ['ESTIMATE','ISTME', 'NetBio', 'SIA'], clin = clin, test_clinid = "response")
+
+# Step 3: Performance comparison
+outcome = optimal.get_performance(score, metric = ['ICI', 'survival'], 
+                                  score_name = ['EST_stromal','EST_immune','IS_immune', 'IS_stromal','NetBio','SIA'], 
+                                  ICI_col = 'response', surv_col = ['time', 'delta'], df_clin = clin)
+```
+
+Example 2:
+```
+gene = pd.read_excel("riaz.xlsx", sheet_name=0, index_col=0)
+clin = pd.read_excel("riaz.xlsx", sheet_name=1, index_col = 1)
+clin = clin.loc[clin.index.str.contains("Pre", na=False)]
+clin['delta'] = clin['Dead/Alive\n(Dead = True)'].apply(lambda x: 1 if x == True else 0)
+clin['OS'] = clin['Time to Death\n(weeks)']
+df_norm = data_processing.normalization(gene, batch = clin, batch_col = "Cohort")
+
+score = TME_score.get_score(df_norm, method = ['ESTIMATE','ISTME', 'NetBio', 'SIA'], clin = clin, test_clinid = "response")
+
+outcome = optimal.get_performance(score, metric = ['ICI', 'survival'], 
+                                  score_name = ['EST_stromal','EST_immune','IS_immune', 'IS_stromal','NetBio','SIA'], 
+                                  ICI_col = 'response', surv_col = ['delta', 'OS'], df_clin = clin, name = "Riaz et al.")
 ```
 
 ## License
@@ -55,7 +79,7 @@ The SIA method from Mezheyeuski et al.
 
 ## Citations
 
-If you use TMEscore in your research, please cite the following papers:
+If you use `TMEImmune` in your research, please cite the following papers:
 
 Yoshihara, K., Shahmoradgoli, M., Martínez, E. et al. Inferring tumour purity and stromal and immune cell admixture from expression data. Nat Commun 4, 2612 (2013). https://doi.org/10.1038/ncomms3612
 

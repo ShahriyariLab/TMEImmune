@@ -88,7 +88,7 @@ def optimal_ICI(df, response, score_name, name = None, roc = True):
         
         # Plot the ROC curve
         if roc:
-            plt.plot(fpr, tpr, lw=4, label=f'{legend_list[i]} ({roc_auc:.2f})')
+            plt.plot(fpr, tpr, lw=4, label=f'{legend_list[i]} ({roc_auc:.4f})')
             plt.title("ROC Curves for ICI Prediction", fontweight = "bold", fontsize = 16)
             plt.xlabel("False Positive Rates", fontweight = "bold", fontsize = 14)
             plt.ylabel("True Positive Rates", fontweight = "bold", fontsize = 14)
@@ -111,8 +111,8 @@ def optimal_ICI(df, response, score_name, name = None, roc = True):
             plt.title(f"ROC Curves for {name}", fontweight = "bold", fontsize = 16) 
 
         plt.legend(loc="upper left", bbox_to_anchor=(0, 1), title = "AUC",
-                   title_fontproperties={'weight': 'bold', 'size': 12}, 
-                   prop = {'size':10, 'weight' : "bold"},
+                   title_fontproperties={'weight': 'bold', 'size': 14}, 
+                   prop = {'size':12, 'weight' : "bold"},
                    frameon = False)
 
     best_auc = max(auc_dict.values())
@@ -208,10 +208,19 @@ def optimal_survival(df, delta, time, score_name, clinical_factors = None, upper
                                       event_observed_B=df1[df1['score_type'] == 'L'][delta])
 
             axs[i].margins(x=0.05, y=0.05)
-            axs[i].text(0.5, 0.85, f"H vs L: P  = {round(results_HL.p_value,4)}", 
+            axs[i].text(0.65, 0.98, f"H vs L: P  = {round(results_HL.p_value,4)}", 
                         transform=axs[i].transAxes, verticalalignment='top', fontweight = 'bold', fontsize = 14)
-            axs[i].text(0.5, 0.75, f"c-index = {round(best_c,4)}", transform=axs[i].transAxes, 
-                        verticalalignment='top', fontweight = 'bold', fontsize = 14)
+            # axs[i].text(0.5, 0.75, f"Best c-index = {round(best_c,4)}", transform=axs[i].transAxes, 
+            #             verticalalignment='top', fontweight = 'bold', fontsize = 14)
+
+            c_text = [f"{key}: {value:.4f}" for key, value in c_dict.items()]
+            text_str = f"C-index\n" + "\n".join(c_text)
+
+            bbox_props = dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="none", linewidth=1)
+            # Display all text inside a single bounding box with adjustable line spacing
+            axs[i].text(0.65, 0.9, text_str, fontsize=12, verticalalignment="top", bbox=bbox_props, 
+                        multialignment="left", linespacing=1.4, transform=axs[i].transAxes, 
+                        fontweight = 'bold')
             
             if name is None:
                 axs[i].set_title(f"K-M Curves for {optimal_score[i]}", fontweight = 'bold', fontsize = 16)
@@ -228,7 +237,7 @@ def optimal_survival(df, delta, time, score_name, clinical_factors = None, upper
             axs[i].set_xticklabels([f'{tick:.0f}' for tick in xticks_rounded], weight = 'bold', size = 14)
             axs[i].set_yticklabels([f'{tick:.1f}' for tick in yticks_rounded] ,weight = 'bold', size = 14)
             axs[i].legend(
-                        loc="upper right", title="Group",
+                        loc="lower left", title="Group",
                         title_fontproperties={'weight': 'bold', 'size': 12},  # Bold legend title
                         prop={'size': 10, 'weight': "bold"}
                     )

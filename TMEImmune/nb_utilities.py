@@ -1,24 +1,15 @@
 import numpy as np 
 import pandas as pd
-import os, json
-import gseapy as gp
-import warnings
+#import gseapy as gp
 from collections import defaultdict
 from sklearn.preprocessing import StandardScaler
-import importlib.resources as pkg_resources
-#from TMEImmune import data_processing
-from data_processing import load_data
+from TMEImmune import data_processing
+from joblib import Parallel, delayed
 
 
 class nb_pathway():
 	def __init__(self):
-		#self.coef = pd.read_csv("data/coef_best_netbio.csv")
-        #response = requests.get(url + "gene_sets.json")
-		#self.gene_set = data_processing.load_data("gene_sets_full.json")
-		self.gene_set = load_data("gene_sets_full.json")
-    
-	# def get_nb_coef(self):
-	# 	return self.coef
+		self.gene_set = data_processing.load_data("gene_sets_full.json")
     
 	def reactome_geneset(self):
 		return self.gene_set
@@ -27,7 +18,7 @@ class nb_pathway():
 class netbio_data:
 	def __init__(self, gene, clin, response, ssgsea = None):
 		self.gene = gene
-		self.clin = clin[clin[response].isin(["R", "NR"])]
+		self.clin = clin[~clin[response].isna()]
 		self._ssgsea = ssgsea
 		self.response = response
 		self.common_id = list(set(gene.columns) & set(clin.index))
@@ -38,32 +29,33 @@ class netbio_data:
 	
 	def get_clin(self):
 		clin = self.clin.loc[self.common_id,:]
-		clin_resp = clin[self.response].apply(lambda x: 1 if x == "R" else 0)
+		if clin[self.response].isin(["R", "NR"]).all():
+			clin_resp = clin[self.response].apply(lambda x: 1 if x == "R" else 0)
+		elif clin[self.response].isin([0,1]).all():
+			clin_resp = clin[self.response]
+		else:
+			raise ValueError("Unsupported response type")
 		return clin_resp
 	
 	def get_ssgsea(self):
 		ssgsea_result = self._ssgsea
+		ssgsea_gene = self.gene.iloc[:,1:]
+		ssgsea_gene.index = self.gene.iloc[:,0]
 		if self._ssgsea is None:
-			ssgsea_result = get_ssgsea(self.gene)
+			ssgsea_result = ssgsea(ssgsea_gene)
+
 		ssgsea_col = ['pathway'] + self.common_id
 		ssgsea_result = ssgsea_result[ssgsea_col]
+
 		return ssgsea_result
 
 
 ## pathway expression and immunotherapy response
 def parse_reactomeExpression_and_immunotherapyResponse(dataset, Prat_cancer_type='MELANOMA'):
 
-	# edf = parse_gene_expression(dataset)
-	# epdf = parse_reactome_expression(dataset)
-	# pdf = parse_immunotherapy_response(dataset)
-	
-    # edf = data_processing.load_data('Gide/expression_mRNA.norm3.txt')
-    # epdf = data_processing.load_data('Gide/pathway_expression_ssgsea.txt')
-    # pdf = data_processing.load_data('Gide/patient_df.txt')
-
-	edf = load_data('Gide/expression_mRNA.norm3.txt')
-	epdf = load_data('Gide/pathway_expression_ssgsea.txt')
-	pdf = load_data('Gide/patient_df.txt')
+	edf = data_processing.load_data('Gide/expression_mRNA.norm3.txt')
+	epdf = data_processing.load_data('Gide/pathway_expression_ssgsea.txt')
+	pdf = data_processing.load_data('Gide/patient_df.txt')
 	
 	# features, labels
 	exp_dic, responses = defaultdict(list), []
@@ -90,68 +82,6 @@ def parse_reactomeExpression_and_immunotherapyResponse(dataset, Prat_cancer_type
 	return e_samples, edf, epdf, responses
 
 
-# pathway expression
-# def parse_reactome_expression(dataset):
-# 	epdf = pd.DataFrame()
-# 	# directory
-# 	data_dir = 'Gide/pathway_expression_ssgsea.txt'
-# 	epdf = data_processing.load_data(data_dir)
-
-# 	# data cleanup
-# 	if len(epdf)>0:
-# 		#epdf = epdf.rename(columns={'testType':'pathway'})
-# 		#epdf = epdf[epdf['pathway'].str.contains('REACTOME_')]
-# 		epdf = epdf.dropna()
-# 	return epdf
-
-
-
-## immunotherapy response
-# def parse_immunotherapy_response(dataset):
-# 	'''
-# 	Input
-# 	dataset : 'IMvigor210', 'Liu', 'Riaz', 'Gide', 'Prat', 'Kim', 'Auslander'
-# 	'''
-# 	# directory
-# 	data_dir = 'Gide/patient_df.txt'
-# 	pdf = data_processing.load_data(data_dir)
-# 	# if ('Liu' in fldr) or ('Gide' in fldr):
-# 	# 	pdf['Response'] = pdf['Response'].astype(str)
-# 	# 	pdf = pdf.loc[pdf['Response'].isin(['PD', 'PR', 'CR', 'SD']),:]
-# 	# 	tmp_response = []
-# 	# 	for r in pdf['Response'].tolist():
-# 	# 		if r in ['CR', 'PR']:
-# 	# 			tmp_response.append('R')
-# 	# 		if r in ['SD', 'PD']:
-# 	# 			tmp_response.append('NR')
-# 	# 	pdf['Response'] = tmp_response
-# 	return pdf
-
-
-## gene expression 
-# def parse_gene_expression(dataset):
-# 	# directory
-# 	data_dir = 'Gide/expression_mRNA.norm3.txt'
-# 	edf = data_processing.load_data(data_dir)
-# 	edf = edf.dropna()
-# 	return edf
-
-# def reactome_genes():
-# 	output = defaultdict(list)
-# 	output_list = []
-# 	f = open('data/c2.all.v7.2.symbols.gmt','r')
-# 	lines = f.readlines()
-# 	for line in lines:
-# 		line = line.strip().split('\t')
-# 		if 'REACTOME' in line[0]:
-# 			reactome = line[0]
-# 			output_list.append(reactome)
-# 			for i in range(2, len(line)):
-# 				gene = line[i]
-# 				output[reactome].append(gene)
-# 	f.close()
-# 	return output
-
 def expression_StandardScaler(exp_df):
 	'''
 	Input : expression dataframe
@@ -166,28 +96,87 @@ def expression_StandardScaler(exp_df):
 	return output
 
 
+def ssgsea(df, geneset = None, score = "NetBio"):
 
-def get_ssgsea(df):
+	if geneset is None:
+		# get netbio reactome pathways and corresponding genesets
+		gene_set_dict = nb_pathway().reactome_geneset()
+		# Remove pathways where the gene list is empty
+		gene_set_dict = {pathway: genes for pathway, genes in gene_set_dict.items() if genes}
+	else:
+		gene_set_dict = geneset
 
-    # get netbio reactome pathways and corresponding genesets
-	gene_set_dict = nb_pathway().reactome_geneset()
-	# Remove pathways where the gene list is empty
-	gene_set_dict = {pathway: genes for pathway, genes in gene_set_dict.items() if genes}
+	gene_set_dict = {sig: set(genes) & set(df.index) for sig, genes in gene_set_dict.items()}
 
-    # perform ssgsea
-	ssgsea_results = gp.ssgsea(
-	data=df,
-    gene_sets=gene_set_dict,  # Path to the gene set file
-    min_size=0,
-    outdir=None,  # Avoid file output
-    verbose=True,
-	sample_norm_method="rank"
-    )
-	nes_pivot = ssgsea_results.res2d.pivot(index='Term', columns='Name', values='NES')
+	df1 = df.apply(pd.to_numeric)
+	df_ranked = df1.rank(axis = 0, method = "average")
+	df_ranked = df_ranked.apply(abs)
+	num_signatures = len(gene_set_dict)
+	num_samples = df_ranked.shape[1]
 
-	nes_pivot = nes_pivot.replace(r'^\s*$', np.nan, regex=True)
-	nes_pivot = nes_pivot.replace("nan", np.nan)
-	nes_pivot = nes_pivot.dropna(how='all')
-	nes_pivot = nes_pivot.reset_index().rename(columns={'Term': 'pathway'}) 
+	sigs = list(gene_set_dict.keys())
 
-	return nes_pivot
+    #for sample in range(num_samples):  # Loop through samples
+	def compute_sample_es(sample):
+		ordered_genes = df_ranked.iloc[:, sample].sort_values(ascending=False)
+		ordered_genes1 = ordered_genes.pow(1. / 4)
+
+		gene_lookup = {gene: idx for idx, gene in enumerate(ordered_genes.index)}
+		sample_ES = np.zeros(num_signatures)
+
+		for j, sig in enumerate(sigs):  # Iterate over signatures
+			hit_genes = gene_set_dict[sig] & set(gene_lookup.keys())  # Find intersection of genes
+
+			if not hit_genes:
+				sample_ES[j] = 0
+				continue 
+
+			hit_indices = np.array([gene_lookup[gene] for gene in hit_genes], dtype = int)  # Get indices for these genes
+			hit_ind = np.zeros(len(ordered_genes), dtype=bool)
+			hit_ind[hit_indices] = True
+			no_hit_ind = ~hit_ind
+			hit_exp = ordered_genes1[hit_ind]
+
+			if np.sum(hit_exp) > 0:
+				no_hit_penalty = np.cumsum(no_hit_ind / np.sum(no_hit_ind))
+				hit_reward = np.cumsum((hit_ind * ordered_genes1) / np.sum(hit_exp))
+				sample_ES[j] = np.sum(hit_reward - no_hit_penalty)
+
+		return sample_ES
+	print("-------- Begin ssgsea, might take some time --------")
+	results = Parallel(n_jobs=-1)(delayed(compute_sample_es)(sample) for sample in range(num_samples))
+	print("-------- Complete computing enrichment score --------")
+    # Convert results to a NumPy array
+	ES_vector = np.array(results).T  # Transpose to match (pathways x samples) shape
+        # Convert back to DataFrame
+	ES_df = pd.DataFrame(ES_vector, index=sigs, columns=df.columns)
+	ES_df = ES_df.replace(r'^\s*$', np.nan, regex=True)
+	ES_df = ES_df.replace("nan", np.nan)
+	ES_df = ES_df.dropna(how='all')
+
+	if score == "ESTIMATE":
+		return ES_df.T
+	elif score == "ISTME":
+		# Normalize ES_vector for each row
+		nes_df = ES_df.apply(lambda row: row / (row.max() - row.min()) if row.max() - row.min() != 0 else row, axis = 1)
+		return nes_df.T
+		
+	print("-------- Normalizing enrichment score --------")
+
+	any_na = ES_df.isna().any().any()
+	if any_na:
+		es_range = (ES_df.min().min(skipna=True), ES_df.max().max(skipna=True))
+	else:
+		es_range = (ES_df.min().min(), ES_df.max().max())
+
+	# check if the range is valid
+	if pd.isna(es_range[0]) or pd.isna(es_range[1]) or not np.isfinite(es_range[0]) or not np.isfinite(es_range[1]):
+		raise ValueError("Normalizing factor contains NAs or infinite values")
+
+	nes_df = ES_df / (es_range[1] - es_range[0])
+
+	print("-------- ssgsea complete --------")
+
+	NES_df = nes_df.reset_index().rename(columns = {"index": "pathway"})
+
+	return NES_df
