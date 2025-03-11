@@ -1,8 +1,8 @@
 ---
 name: Feature request
 about: Suggest a new TME scoring method
-title: ''
-labels: ''
+title: '[Request]'
+labels: 'request'
 assignees: ''
 
 ---
