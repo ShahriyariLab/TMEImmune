@@ -12,7 +12,7 @@
 
 ## Requirement
 
-The installation of TMEImmune requires python version 3.10 and above.
+The installation of `TMEImmune` requires python version 3.10 and above.
 
 
 ## Installation
@@ -64,6 +64,20 @@ outcome = optimal.get_performance(score, metric = ['ICI', 'survival'],
                                   score_name = ['EST_stromal','EST_immune','IS_immune', 'IS_stromal','NetBio','SIA'], 
                                   ICI_col = 'response', surv_col = ['delta', 'OS'], df_clin = clin, name = "Riaz et al.")
 ```
+
+## Docker Container
+For users who prefer a ready-to-use, stable runtime environment, we provide a pre-built Docker container `tmeimmune_image` that includes all necessary dependencies and configurations for running our package. Below shows an example to pull the image from docker and run it, which returns the same output as Example 1 in previous section.
+
+Pull the docker image:
+```
+docker pull qiluzhou/tmeimmune_image:latest
+```
+
+Run the container using Example 1:
+```
+docker run --rm -v $(pwd):/app tmeimmune_image python /app/docker_test.py
+```
+
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for more details.

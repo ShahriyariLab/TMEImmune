@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.3.0' 
+VERSION = '1.3.1' 
 DESCRIPTION = 'Python package for calculating TME scores'
 
 
@@ -10,7 +10,7 @@ setup(
         version=VERSION,
         author="Qilu Zhou",
         author_email="<qiluzhou@umass.edu>",
-        url="https://github.com/qiluzhou/TMEImmune",
+        url="https://github.com/ShahriyariLab/TMEImmune",
         description=DESCRIPTION,
         long_description=open("README.md").read(),
         long_description_content_type="text/markdown",
