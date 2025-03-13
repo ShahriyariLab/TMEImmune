@@ -66,24 +66,24 @@ outcome = optimal.get_performance(score, metric = ['ICI', 'survival'],
 ```
 
 ## Docker Container
-For users who prefer a ready-to-use, stable runtime environment, we provide a pre-built Docker container `tmeimmune_image` that includes all necessary dependencies and configurations for running our package. Below shows an example to pull the image from docker and run it, which returns the same output as Example 1 in previous section.
+For users who prefer a ready-to-use, stable runtime environment, we provide a pre-built Docker container `tmeimmune` that includes all necessary dependencies and configurations for running our package. Below shows an example to pull the image from docker and run it, which returns the same output as Example 1 in previous section.
 
 Pull the docker image:
 ```
-docker pull qiluzhou/tmeimmune_image:latest
+docker pull qiluzhou/tmeimmune:v1.0
 ```
 
 Run the container using Example 1:
 ```
-docker run --rm -v $(pwd):/app tmeimmune_image python /app/docker_test.py
+docker run --rm -v $(pwd):/app tmeimmune python /app/docker_test.py
 ```
 
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
-## Contact
-If you have any questions or feedback, feel free to open an issue on GitHub Issues. We also welcome contributions for integrating new TME scores into our package. If you'd like to propose a method, please attach a link to its introduction in the Github issue, and we will evaluate it accordingly. 
+## Contact and contribution
+If you have any questions or feedback, feel free to open an issue on GitHub Issues. We also welcome contributions for integrating new TME scores into our package. If you'd like to propose a method, please attach a link to its introduction in the Github issue using the `feature_request` template, and we will evaluate it accordingly. If you encounter any bugs, open an issue on `bug_report`. All the changes we've made can be tracked through the GitHub project `TMEImmune_project`.
 
 ## Acknowledgements
 The ESTIMATE algorithm from Yoshihara et al.
