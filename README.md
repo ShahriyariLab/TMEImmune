@@ -21,7 +21,7 @@ You can install the package via the following two commands:
 
 ```bash
 pip install TMEImmune
-pip install git+https://github.com/qiluzhou/TMEImmune.git
+pip install git+https://github.com/ShahriyariLab/TMEImmune
 ```
 
 
@@ -32,9 +32,7 @@ Here are some basic usage examples:
 Example 1:
 ```
 import pandas as pd
-from TMEImmune import data_processing
-from TMEImmune import TME_score
-from TMEImmune import optimal
+from TMEImmune import data_processing, TME_score, optimal
 
 # Step 1: Data Normalization
 clin = pd.read_csv("example_clin.csv", index_col = 0)
