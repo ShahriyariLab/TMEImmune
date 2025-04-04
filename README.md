@@ -78,7 +78,7 @@ docker run --rm -v $(pwd):/app tmeimmune python /app/docker_test.py
 
 ## Troubleshooting
 
-### `GLIBCXX_version' not found
+### Bug 1: `GLIBCXX_version' not found
 Some users may encounter errors similar to:
 
 ```ImportError: /path/to/libstdc++.so.6: version `GLIBCXX_3.4.32` not found```
@@ -89,24 +89,33 @@ This usually indicates that the system’s C++ standard library (libstdc++) is t
 
 If you’re using a Conda environment on Linux, you can install or upgrade the libstdcxx-ng package from the conda-forge channel to get the latest version. Run the following command:
 
-```conda install -c conda-forge libstdcxx-ng```
+```
+conda install -c conda-forge libstdcxx-ng
+```
 
 This will install the most recent version of libstdcxx-ng available, ensuring that the required GLIBCXX version is present.
 
 #### 2. Create a Preconfigured Environment
 
-We provide an env.yml file that sets up a Conda environment with all the recommended dependencies (including a compatible version of libstdcxx-ng). To create this environment, run:
+We provide an env.yml file in our repository that sets up a Conda environment with all the recommended dependencies (including a compatible version of libstdcxx-ng). To create this environment, run:
 
-```conda env create -f env.yml```
+```
+conda env create -f env.yml
+```
 
 After the environment is created, activate it with:
 
-```conda activate tme_env```
+```
+conda activate tme_env
+```
 
-### command 'g++' failed
+### Bug 2: command 'g++' failed
 
 This error indicates that no C++ compiler (g++) is installed in the current environment. To fix this, you need to install the build tools.
-```apt-get update && apt-get install -y build-essential```
+
+```
+apt-get update && apt-get install -y build-essential
+```
 
 
 If you continue to have issues, please ensure that your system’s packages are up-to-date, or contact us for further support.
