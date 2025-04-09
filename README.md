@@ -66,12 +66,17 @@ outcome = optimal.get_performance(score, metric = ['ICI', 'survival'],
 ## Docker Container
 For users who prefer a ready-to-use, stable runtime environment, we provide a pre-built Docker container `tmeimmune` that includes all necessary dependencies and configurations for running our package. Below shows an example to pull the image from docker and run it, which returns the same output as Example 1 in previous section.
 
-Pull the docker image:
+Pull the Docker image:
 ```
 docker pull qiluzhou/tmeimmune:v1.0
 ```
 
-Run the container using Example 1:
+Or build the Docker image from local Dockerfile after downloading the docker/ folder:
+```
+docker build -t tmeimmune .
+```
+
+Run the container using Example 1. The two required example datasets are in the data/ folder.
 ```
 docker run --rm -v $(pwd):/app tmeimmune python /app/docker_test.py
 ```
@@ -83,11 +88,11 @@ Some users may encounter errors similar to:
 
 ```ImportError: /path/to/libstdc++.so.6: version `GLIBCXX_3.4.32` not found```
 
-This usually indicates that the system’s C++ standard library (libstdc++) is too old for one of our package’s dependencies. Here are a couple of solutions:
+This usually indicates that the system’s C++ standard library (libstdc++) is too old for one of our package’s dependencies. The following two solutions work for Ubuntu 24.04 with conda version 24.11.3:
 
 #### 1. Update libstdc++ via Conda
 
-If you’re using a Conda environment on Linux, you can install or upgrade the libstdcxx-ng package from the conda-forge channel to get the latest version. Run the following command:
+Install or upgrade the libstdcxx-ng package from the conda-forge channel to get the latest version.
 
 ```
 conda install -c conda-forge libstdcxx-ng
