@@ -87,11 +87,11 @@ def expression_StandardScaler(exp_df):
 	Input : expression dataframe
 	'''
 	col1 = exp_df.columns[0]
-	tmp = StandardScaler().fit_transform(exp_df.T.values[1:])
+	tmp = pd.DataFrame(StandardScaler().fit_transform(exp_df.T.values[1:]))
 	new_tmp = defaultdict(list)
 	new_tmp[col1] = exp_df[col1].tolist()
 	for s_idx, sample in enumerate(exp_df.columns[1:]):
-		new_tmp[sample] = tmp[s_idx]
+		new_tmp[sample] = tmp.iloc[s_idx]
 	output = pd.DataFrame(data=new_tmp, columns=exp_df.columns)
 	return output
 
